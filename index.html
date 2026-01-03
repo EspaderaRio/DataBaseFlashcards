@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quiz Manager</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="app">
+    <h1>Quiz Manager</h1>
+
+    <!-- Add / Edit Form -->
+    <form id="quizForm" class="card">
+      <h2 id="formTitle">Add Quiz</h2>
+      <input
+        type="text"
+        id="title"
+        placeholder="Quiz title"
+        required
+      />
+      <button type="submit">Save</button>
+      <button type="button" id="cancelEdit" hidden>Cancel</button>
+    </form>
+
+    <!-- Quiz List -->
+    <div class="card">
+      <h2>Quizzes</h2>
+      <ul id="quizList"></ul>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
