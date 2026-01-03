@@ -3,19 +3,17 @@ const API_BASE = "https://quiz-backend.espaderario.workers.dev/api";
 const quizList = document.getElementById("quizList");
 const quizForm = document.getElementById("quizForm");
 const titleInput = document.getElementById("title");
-const formTitle = document.getElementById("formTitle");
-const cancelEditBtn = document.getElementById("cancelEdit");
 
 let editingId = null;
 
 /* =========================
-   Load Quizzes (READ)
+   LOAD ALL QUIZZES (GET /api/sets)
 ========================= */
 async function loadQuizzes() {
   quizList.innerHTML = "<li>Loading...</li>";
 
   try {
-    const res = await fetch(`${API_BASE}/quizzes`);
+    const res = await fetch(`${API_BASE}/sets`);
     const quizzes = await res.json();
 
     quizList.innerHTML = "";
@@ -26,7 +24,7 @@ async function loadQuizzes() {
       li.innerHTML = `
         <span>${q.title}</span>
         <div class="actions">
-          <button onclick="startEdit('${q.id}', '${q.title}')">Edit</button>
+          <button onclick="editQuiz('${q.id}', '${q.title}')">Edit</button>
           <button class="delete" onclick="deleteQuiz('${q.id}')">Delete</button>
         </div>
       `;
@@ -41,72 +39,52 @@ async function loadQuizzes() {
 }
 
 /* =========================
-   Create / Update
+   CREATE / UPDATE QUIZ
 ========================= */
 quizForm.addEventListener("submit", async e => {
   e.preventDefault();
 
-  const title = titleInput.value.trim();
-  if (!title) return;
+  const payload = {
+    title: titleInput.value,
+    questions: []
+  };
 
-  const method = editingId ? "PUT" : "POST";
   const url = editingId
     ? `${API_BASE}/quizzes/${editingId}`
     : `${API_BASE}/quizzes`;
 
-  try {
-    await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title })
-    });
+  const method = editingId ? "PUT" : "POST";
 
-    resetForm();
-    loadQuizzes();
+  await fetch(url, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
 
-  } catch (err) {
-    console.error(err);
-    alert("Failed to save quiz");
-  }
+  editingId = null;
+  quizForm.reset();
+  loadQuizzes();
 });
 
 /* =========================
-   Edit
+   EDIT
 ========================= */
-window.startEdit = (id, title) => {
+function editQuiz(id, title) {
   editingId = id;
   titleInput.value = title;
-  formTitle.textContent = "Edit Quiz";
-  cancelEditBtn.hidden = false;
-};
-
-/* =========================
-   Delete
-========================= */
-window.deleteQuiz = async id => {
-  if (!confirm("Delete this quiz?")) return;
-
-  try {
-    await fetch(`${API_BASE}/quizzes/${id}`, {
-      method: "DELETE"
-    });
-    loadQuizzes();
-  } catch (err) {
-    console.error(err);
-    alert("Failed to delete quiz");
-  }
-};
-
-/* =========================
-   Helpers
-========================= */
-function resetForm() {
-  editingId = null;
-  quizForm.reset();
-  formTitle.textContent = "Add Quiz";
-  cancelEditBtn.hidden = true;
 }
 
-cancelEditBtn.addEventListener("click", resetForm);
+/* =========================
+   DELETE
+========================= */
+async function deleteQuiz(id) {
+  if (!confirm("Delete this quiz?")) return;
+
+  await fetch(`${API_BASE}/quizzes/${id}`, {
+    method: "DELETE"
+  });
+
+  loadQuizzes();
+}
 
 loadQuizzes();
