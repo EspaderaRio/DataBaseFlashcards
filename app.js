@@ -54,24 +54,47 @@ function bindEvents() {
    LOAD QUIZZES
 ========================= */
 async function loadQuizzes() {
-  const res = await fetch(`${API_BASE}/sets`);
-  quizzesCache = await res.json();
-
   const list = document.getElementById("quizList");
-  list.innerHTML = "";
+  list.innerHTML = `<li class="muted">Loading quizzes...</li>`;
 
-  quizzesCache.forEach(q => {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <strong>${q.title}</strong>
-      <span>(${q.cards.length} questions)</span>
-      <div class="actions">
-        <button data-edit="${q.id}">Edit</button>
-        <button data-delete="${q.id}">Delete</button>
-      </div>
-    `;
-    list.appendChild(li);
-  });
+  try {
+    const res = await fetch(`${API_BASE}/sets`);
+    const data = await res.json();
+
+    // Handle backend error response
+    if (!Array.isArray(data)) {
+      console.error("Unexpected response:", data);
+      list.innerHTML = `<li class="error">Invalid server response</li>`;
+      return;
+    }
+
+    quizzesCache = data;
+    list.innerHTML = "";
+
+    if (quizzesCache.length === 0) {
+      list.innerHTML = `<li class="muted">No quizzes yet</li>`;
+      return;
+    }
+
+    quizzesCache.forEach(q => {
+      const cards = Array.isArray(q.cards) ? q.cards : [];
+
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <strong>${q.title}</strong>
+        <span>(${cards.length} questions)</span>
+        <div class="actions">
+          <button data-edit="${q.id}">Edit</button>
+          <button data-delete="${q.id}">Delete</button>
+        </div>
+      `;
+
+      list.appendChild(li);
+    });
+  } catch (err) {
+    console.error(err);
+    list.innerHTML = `<li class="error">Failed to load quizzes</li>`;
+  }
 }
 
 /* =========================
