@@ -186,13 +186,15 @@ function startEdit(id) {
   document.getElementById("formTitle").textContent = "Edit Quiz";
   document.getElementById("cancelEdit").hidden = false;
 
-  quiz.cards.forEach(card =>
-    addQuestion({
-      question: card.question,
-      options: [card.answer],
-      correct: card.answer
-    })
-  );
+const cards = Array.isArray(quiz.cards) ? quiz.cards : [];
+
+cards.forEach(card =>
+  addQuestion({
+    question: card.question,
+    options: [card.answer],
+    correct: card.answer
+  })
+);
 }
 
 /* =========================
